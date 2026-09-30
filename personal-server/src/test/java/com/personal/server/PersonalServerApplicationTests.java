@@ -1,0 +1,12 @@
+package com.personal.server;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class PersonalServerApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+}
