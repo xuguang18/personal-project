@@ -1,6 +1,6 @@
 ---
 name: SQL标准化
-description: 对用户提供的SQL进行标准化格式化、美化、重构；支持Hive/SparkSQL/FlinkSQL/Presto/MySQL等主流SQL方言，处理长SQL、嵌套子查询、CTE、JOIN多表关联、复杂WHERE条件、IN长列表、窗口函数，解决缩进混乱、大小写不统一、换行不合理、可读性差等绝大多数SQL美化需求，同时保留原有业务逻辑不变。
+description: 对提供的SQL进行标准化格式化、美化、重构；支持Hive/SparkSQL/FlinkSQL/Presto/MySQL等主流SQL方言，处理长SQL、嵌套子查询、CTE、JOIN多表关联、复杂WHERE条件、IN长列表、窗口函数，解决缩进混乱、大小写不统一、换行不合理、可读性差等绝大多数SQL美化需求，同时保留原有业务逻辑不变。
 author: xuguang.cao
 version: 1.2
 trigger:
