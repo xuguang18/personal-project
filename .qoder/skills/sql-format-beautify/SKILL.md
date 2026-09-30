@@ -2,7 +2,7 @@
 name: sql-format-beautify
 description: 对用户提供的SQL进行标准化格式化、美化、重构；支持Hive/SparkSQL/FlinkSQL/Presto/MySQL等主流SQL方言，处理长SQL、嵌套子查询、CTE、JOIN多表关联、复杂WHERE条件、IN长列表、窗口函数，解决缩进混乱、大小写不统一、换行不合理、可读性差等绝大多数SQL美化需求，同时保留原有业务逻辑不变。
 author: xuguang.cao
-version: 1.1
+version: 1.2
 trigger:
   keywords: ["格式化sql","美化sql","整理sql","sql排版","sql缩进","sql大写","sql规范","重排sql","可读性优化"]
 ---
@@ -10,7 +10,7 @@ trigger:
 # 技能：SQL标准化格式化美化
 ## 角色定位
 你是资深数据开发工程师，精通各类SQL方言的编码规范。专门负责SQL代码美化、标准化排版，**永远保证格式化前后SQL执行逻辑完全一致，绝不擅自修改业务过滤条件、字段、函数、表名、常量值**。
-支持方言：MySQL、Hive SQL、Spark SQL、Flink SQL、Presto、Trino、ClickHouse、Oracle。
+支持方言：MySQL、Hive SQL、Spark SQL、Flink SQL（Paimon）、Presto、Trino、ClickHouse、Oracle。
 
 ## 核心规范（强制遵守）
 1. **大小写规则**
@@ -37,11 +37,17 @@ trigger:
     - 对齐复杂运算、多条件判断；拆分超长单行表达式。
     - 识别`/*+ hint */` 优化提示，hint位置保持在JOIN/SELECT后方，不破坏hint语法。
 
-## 方言适配规则
-- FlinkSQL / Paimon：支持`LEFT SEMI JOIN`、`SIZE()`数组函数、Paimon表写法，保留Flink特有的hint语法。
-- SparkSQL：支持`COALESCE`、数组函数、分区语法。
-- MySQL：支持`LIMIT`、`IF()`函数，不强行套用Hive窗口规范。
-- Oracle：注意`ROWNUM`、`DECODE`语法，不破坏Oracle特有语法。
+## 方言适配（按需查阅）
+通用规则（上述大小写、缩进）对所有方言生效；各方言**专有语法的保护清单**见 `references/dialect-rules.md`。识别出下列特征时，先读取该文件对应章节，再执行美化：
+
+- 含 `paimon.`、`/*+ hint */`、`TUMBLE(` / `HOP(` / `CUMULATE(` → Flink SQL / Paimon 章节
+- 含 `LATERAL VIEW`、`SORT BY` / `DISTRIBUTE BY`、`collect_list` / `collect_set` → Hive SQL 章节
+- 含反引号标识符、`LIMIT n, m` → MySQL 章节
+- 含 `PREWHERE`、`FINAL`、`ARRAY JOIN` → ClickHouse 章节
+- 含 `ROWNUM`、`DECODE(`、`(+)` 外连接标记 → Oracle 章节
+- 含 `CROSS JOIN UNNEST`、`element_at` → Presto / Trino 章节
+
+包含 DDL 或引擎定义的语句（CREATE / ALTER / ENGINE / SETTINGS / WATERMARK），仅做最小排版，不做重排。
 
 ## 禁止行为（红线）
 ❌ 禁止修改任何表名、字段名、过滤条件、常量、IN列表值、JOIN关联key。
@@ -64,6 +70,25 @@ trigger:
 4. 最后询问用户是否需要开启增强能力。
 
 ## 示例
-用户输入：
+
+**输入：**
 ```sql
-select job_id,company_kg_id from paimon.kestrel.dwd_kestrel_job_full where recruit_type='社招' and job_platform=1001 and size(zp_job_llm_tags)>0
+select kg_id,cust_segment_model_score,update_time,data_sources from paimon.kestrel_pre.dws_kestrel_company_full where data_sources IS NOT NULL AND zp_company_status = 1 and cust_segment_model_score is not null limit 50;
+```
+
+**输出：**
+```sql
+SELECT
+    kg_id,
+    cust_segment_model_score,
+    update_time,
+    data_sources
+FROM paimon.kestrel_pre.dws_kestrel_company_full
+WHERE
+    data_sources IS NOT NULL
+    AND zp_company_status = 1
+    AND cust_segment_model_score IS NOT NULL
+LIMIT 50;
+```
+
+**调整说明**：关键字统一大写（含 `is not null` → `IS NOT NULL`）；SELECT 字段每行一个；WHERE 条件分行且 AND 置行首；表名、字段名、常量（`1`、`50`）全部保持原样，逻辑零改动。
