@@ -49,7 +49,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions>
+                    <!-- id 必须为 default 以外的值：Spring Boot 父 pom 的 pluginManagement 中
+                         存在 id=default 的 shade execution（含 AppendingTransformer），同名会
+                         按索引合并 transformers 导致参数错配报错 -->
                     <execution>
+                        <id>shade-job</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>

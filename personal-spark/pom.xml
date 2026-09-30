@@ -47,7 +47,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions>
+                    <!-- 同 personal-flink：避免与 Spring Boot 父 pom 中 id=default 的 shade execution 合并 -->
                     <execution>
+                        <id>shade-job</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
